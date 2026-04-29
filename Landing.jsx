@@ -1,5 +1,5 @@
 // Landing.jsx — ClinAI Scroll-Driven Premium Product Story
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 // ── Utilities ─────────────────────────────────────────────────────────
 const lerp  = (a, b, t) => a + (b - a) * t;
@@ -17,7 +17,6 @@ function useWindowSize() {
   return size;
 }
 
-const CHAPTER_VH  = 1.4;
 const PHASE_COUNT = 5;
 
 // ── Module data ───────────────────────────────────────────────────────
@@ -41,26 +40,49 @@ const MODULES = [
     scenario:{ name:'Amina Juma', age:34, context:'Son with femur fracture — Mwanza, Tanzania' } },
 ];
 
-// ── Scroll-phase hook ─────────────────────────────────────────────────
-function useScrollPhase() {
-  const [state, setState] = useState({ phase:0, progress:0, scrollY:0 });
+// ── Snap-phase hook ───────────────────────────────────────────────────
+function useSnapPhase(sectionRefs, containerRef) {
+  const [phase, setPhase] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const animRef = useRef(null);
+  const prevPhaseRef = useRef(-1);
+
   useEffect(() => {
-    const update = () => {
-      const sy  = window.scrollY;
-      const vh  = window.innerHeight;
-      const chPx = CHAPTER_VH * vh;
-      const raw  = sy / chPx;
-      setState({
-        phase:    clamp(Math.floor(raw), 0, PHASE_COUNT - 1),
-        progress: clamp(raw - Math.floor(raw), 0, 1),
-        scrollY:  sy,
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const idx = sectionRefs.current.indexOf(entry.target);
+          if (idx >= 0) setPhase(idx);
+        }
       });
-    };
-    window.addEventListener('scroll', update, { passive:true });
-    update();
-    return () => window.removeEventListener('scroll', update);
+    }, { root: container, threshold: 0.5 });
+
+    sectionRefs.current.forEach(el => el && observer.observe(el));
+    return () => observer.disconnect();
   }, []);
-  return state;
+
+  useEffect(() => {
+    if (phase === prevPhaseRef.current) return;
+    prevPhaseRef.current = phase;
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+
+    setProgress(0);
+    const duration = 1200;
+    const start = performance.now();
+
+    const tick = (now) => {
+      const t = clamp((now - start) / duration, 0, 1);
+      setProgress(eio(t));
+      if (t < 1) animRef.current = requestAnimationFrame(tick);
+    };
+    animRef.current = requestAnimationFrame(tick);
+
+    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+  }, [phase]);
+
+  return { phase, progress };
 }
 
 // ── HoverButton ───────────────────────────────────────────────────────
@@ -82,7 +104,7 @@ function HoverButton({ children, onClick, primary, large }) {
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────
-function Nav({ onEnterModule, phase }) {
+function Nav({ onEnterModule, phase, onDotClick }) {
   return (
     <nav style={{
       position:'fixed', top:0, left:0, right:0, zIndex:200, height:60,
@@ -100,10 +122,11 @@ function Nav({ onEnterModule, phase }) {
       {/* Chapter dots */}
       <div style={{ display:'flex', gap:7, alignItems:'center' }}>
         {Array.from({ length: PHASE_COUNT }).map((_, i) => (
-          <div key={i} style={{
+          <div key={i} onClick={() => onDotClick && onDotClick(i)} style={{
             width: i === phase ? 20 : 5, height:5, borderRadius:3,
             background: i === phase ? 'var(--accent)' : 'var(--border)',
             transition:'all 0.5s var(--ease-spring)',
+            cursor:'pointer',
           }} />
         ))}
       </div>
@@ -581,44 +604,75 @@ function PostStory({ onEnterModule }) {
 
 // ── Landing Page ──────────────────────────────────────────────────────
 function LandingPage({ onEnterModule }) {
-  const { phase, progress, scrollY } = useScrollPhase();
+  const sectionRefs = useRef([]);
+  const snapContainerRef = useRef(null);
+  const postStoryRef = useRef(null);
+
+  const { phase, progress } = useSnapPhase(sectionRefs, snapContainerRef);
   const { w: vw, h: vh } = useWindowSize();
-  const storyH = PHASE_COUNT * CHAPTER_VH * vh;
-  const storyVisible = scrollY < storyH + vh * 0.4;
+  const [storyVisible, setStoryVisible] = useState(true);
   const isMobile = vw < 700;
 
-  // Split percentages — widen left on narrower screens so text has room
+  useEffect(() => {
+    const container = snapContainerRef.current;
+    const postEl = postStoryRef.current;
+    if (!container || !postEl) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.target === postEl) setStoryVisible(!entry.isIntersecting);
+      });
+    }, { root: container, threshold: 0.3 });
+    observer.observe(postEl);
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToSection = useCallback((i) => {
+    sectionRefs.current[i]?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
   const leftPct  = isMobile ? 100 : vw < 1000 ? 46 : 44;
   const rightPct = 100 - leftPct;
-  const leftPx   = vw * leftPct / 100;
   const panelW   = vw * rightPct / 100;
   const panelH   = vh - 60;
   const lPad     = Math.max(24, Math.min(80, vw * 0.06));
 
   return (
     <div>
-      <Nav onEnterModule={onEnterModule} phase={phase} />
+      <Nav onEnterModule={onEnterModule} phase={phase} onDotClick={scrollToSection} />
       <AmbientGlow phase={phase} />
       {!isMobile && <StoryDivider visible={storyVisible} left={leftPct} />}
 
       {/* Narrative text — fixed left panel */}
-      <div style={{ position:'fixed', top:60, left:0, width:`${leftPct}%`, height:`${panelH}px`, zIndex:15, pointerEvents:'none' }}>
+      <div style={{ position:'fixed', top:60, left:0, width:`${leftPct}%`, height:`${panelH}px`, zIndex:15, pointerEvents:'none', opacity: storyVisible ? 1 : 0, transition:'opacity 0.6s' }}>
         <NarrativeText phase={phase} progress={progress} onEnterModule={onEnterModule} vw={vw} />
       </div>
 
       {/* Animated card — fixed right panel (hidden on mobile) */}
       {!isMobile && (
-        <div style={{ position:'fixed', top:60, right:0, width:`${rightPct}%`, height:`${panelH}px`, zIndex:10, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
+        <div style={{ position:'fixed', top:60, right:0, width:`${rightPct}%`, height:`${panelH}px`, zIndex:10, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', opacity: storyVisible ? 1 : 0, transition:'opacity 0.6s' }}>
           <AnimatedCardStage phase={phase} progress={progress} visible={storyVisible} panelW={panelW} panelH={panelH} />
         </div>
       )}
 
       <ScrollHint visible={storyVisible && phase === 0 && progress < 0.3} left={lPad} />
 
-      {/* Scroll spacer */}
-      <div style={{ height:`${PHASE_COUNT * CHAPTER_VH * 100}vh` }} />
+      {/* Snap scroll container */}
+      <div ref={snapContainerRef} style={{
+        height:'100vh', overflowY:'auto',
+        scrollSnapType:'y mandatory',
+      }}>
+        {Array.from({ length: PHASE_COUNT }).map((_, i) => (
+          <section key={i} ref={el => sectionRefs.current[i] = el} style={{
+            height:'100vh',
+            scrollSnapAlign:'start',
+            scrollSnapStop:'always',
+          }} />
+        ))}
 
-      <PostStory onEnterModule={onEnterModule} />
+        <div ref={postStoryRef} style={{ scrollSnapAlign:'start' }}>
+          <PostStory onEnterModule={onEnterModule} />
+        </div>
+      </div>
     </div>
   );
 }
