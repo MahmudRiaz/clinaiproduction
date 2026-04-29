@@ -49,7 +49,9 @@ function App() {
     <>
       {view === 'landing'
         ? <LandingPage onEnterModule={enterModule} />
-        : <ModuleExperience module={selectedModule} onBack={backToLanding} />
+        : (selectedModule && selectedModule.id === 5
+            ? <SDOHModuleExperience module={selectedModule} onBack={backToLanding} />
+            : <ModuleExperience module={selectedModule} onBack={backToLanding} />)
       }
 
       {/* Tweaks panel */}
