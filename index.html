@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClinAI — Medical Training, Reimagined</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           oklch(98.5% 0.006 240);
+      --bg-alt:       oklch(96.5% 0.008 240);
+      --dark:         oklch(9%  0.022 245);
+      --dark-mid:     oklch(16% 0.022 245);
+      --text:         oklch(11% 0.02 245);
+      --text-muted:   oklch(44% 0.016 240);
+      --text-subtle:  oklch(62% 0.012 240);
+      --accent:       oklch(52% 0.16 235);
+      --accent-light: oklch(94% 0.04 235);
+      --teal:         oklch(58% 0.13 185);
+      --teal-light:   oklch(94% 0.04 185);
+      --border:       oklch(88% 0.008 240);
+      --border-dark:  oklch(22% 0.018 245);
+      --surface:      oklch(100% 0 0);
+      --surface-sub:  oklch(97% 0.006 240);
+      --gold:         oklch(72% 0.12 72);
+
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+
+      --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-out:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    #root { min-height: 100vh; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s var(--ease-spring), transform 0.8s var(--ease-spring);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    ::selection { background: var(--accent); color: white; }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="Landing.jsx"></script>
+  <script type="text/babel" src="Module.jsx"></script>
+  <script type="text/babel" src="App.jsx"></script>
+</body>
+</html>
