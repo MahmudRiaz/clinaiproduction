@@ -1,6 +1,35 @@
 // App.jsx — ClinAI root router
 const { useState } = React;
 
+function EKGModuleExperience({ onBack }) {
+  return (
+    <div style={{ minHeight:'100vh', background:'var(--bg)', fontFamily:'var(--font-sans)' }}>
+      {/* Nav bar */}
+      <div style={{
+        position:'sticky', top:0, zIndex:200, height:60,
+        display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 32px',
+        background:'oklch(98.5% 0.006 240 / 0.92)', backdropFilter:'blur(20px)',
+        borderBottom:'1px solid var(--border)',
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <button onClick={onBack} style={{
+            fontFamily:'var(--font-sans)', fontSize:13, fontWeight:500,
+            background:'transparent', color:'var(--text-muted)', border:'1px solid var(--border)',
+            padding:'7px 16px', borderRadius:100, cursor:'pointer',
+          }}>← Back</button>
+          <span style={{ fontFamily:'var(--font-serif)', fontSize:17, fontWeight:600, letterSpacing:'-0.01em' }}>Reading EKGs</span>
+          <span style={{ fontFamily:'var(--font-sans)', fontSize:10, background:'oklch(97% 0.07 72)', color:'oklch(52% 0.14 72)', border:'1px solid oklch(85% 0.1 72)', padding:'3px 10px', borderRadius:100, fontWeight:600 }}>🚧 Under Construction</span>
+        </div>
+        <span style={{ fontFamily:'var(--font-sans)', fontSize:11, color:'var(--text-subtle)', letterSpacing:'0.06em', textTransform:'uppercase' }}>Cardiology</span>
+      </div>
+      {/* EKG Viewer */}
+      <div style={{ padding:'24px 32px' }}>
+        <EKGViewer />
+      </div>
+    </div>
+  );
+}
+
 const TWEAK_DEFAULTS = {
   accentHue: 235,
   fontHeading: 'Cormorant Garamond',
@@ -51,6 +80,8 @@ function App() {
         ? <LandingPage onEnterModule={enterModule} />
         : (selectedModule && selectedModule.id === 5
             ? <SDOHModuleExperience module={selectedModule} onBack={backToLanding} />
+            : selectedModule && selectedModule.id === 6
+            ? <EKGModuleExperience onBack={backToLanding} />
             : <ModuleExperience module={selectedModule} onBack={backToLanding} />)
       }
 
