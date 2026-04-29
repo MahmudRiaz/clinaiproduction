@@ -39,6 +39,9 @@ const MODULES = [
     desc:'Explore how structural forces shape health outcomes. Practice culturally sensitive interviewing with a patient navigating real barriers to care.',
     duration:'~30 min', available:true, accentColor:'var(--teal)',
     scenario:{ name:'Amina Juma', age:34, context:'Son with femur fracture — Mwanza, Tanzania' } },
+  { id:6, title:'Reading EKGs', category:'Cardiology',
+    desc:'Master EKG interpretation with an interactive 12-lead viewer, wave annotations, caliper tools, and AI-guided practice cases.',
+    duration:'~25 min', available:true, underConstruction:true, accentColor:'oklch(52% 0.16 15)' },
 ];
 
 // ── Scroll-phase hook ─────────────────────────────────────────────────
@@ -525,6 +528,7 @@ function ModuleCard({ module: m, onEnter }) {
           <h3 style={{ fontFamily:'var(--font-serif)', fontSize:22, fontWeight:600, lineHeight:1.15, letterSpacing:'-0.01em' }}>{m.title}</h3>
         </div>
         {!m.available && <div style={{ fontFamily:'var(--font-sans)', fontSize:10, background:'var(--surface-sub)', color:'var(--text-subtle)', padding:'3px 10px', borderRadius:100, fontWeight:500, whiteSpace:'nowrap' }}>Coming soon</div>}
+        {m.underConstruction && <div style={{ fontFamily:'var(--font-sans)', fontSize:10, background:'oklch(97% 0.07 72)', color:'oklch(52% 0.14 72)', border:'1px solid oklch(85% 0.1 72)', padding:'3px 10px', borderRadius:100, fontWeight:600, whiteSpace:'nowrap' }}>🚧 Under construction</div>}
       </div>
       <p style={{ fontFamily:'var(--font-sans)', fontSize:13, color:'var(--text-muted)', lineHeight:1.65, fontWeight:300, marginBottom:24 }}>{m.desc}</p>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
