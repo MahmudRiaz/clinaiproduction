@@ -35,6 +35,10 @@ const MODULES = [
   { id:4, title:'Cultural Humility', category:'Patient-Centered Care',
     desc:'Navigate cultural differences with sensitivity, curiosity, and respect for patient identity.',
     duration:'~25 min', available:false, accentColor:'oklch(60% 0.13 320)' },
+  { id:5, title:'Social Determinants of Health', category:'Global Health & SDOH',
+    desc:'Explore how structural forces shape health outcomes. Practice culturally sensitive interviewing with a patient navigating real barriers to care.',
+    duration:'~30 min', available:true, accentColor:'var(--teal)',
+    scenario:{ name:'Amina Juma', age:34, context:'Son with femur fracture — Mwanza, Tanzania' } },
 ];
 
 // ── Scroll-phase hook ─────────────────────────────────────────────────
